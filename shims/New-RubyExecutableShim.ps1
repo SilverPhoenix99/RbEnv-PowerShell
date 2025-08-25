@@ -9,27 +9,24 @@ function New-RubyExecutableShim {
         [IO.FileInfo] $Executable
     )
 
-    $name = $Executable.BaseName -replace '\.','_'
-    $functionName = "Invoke-RbEnvShim--${name}"
-    $path = $Executable.Directory.FullName
+    $executableDirectory = $Executable.Directory.FullName
     $fullName = $Executable.FullName
 
-    Invoke-Expression @"
-function global:${functionName} {
+    $body = {
 
-    `$ErrorActionPreference = 'Stop'
+        $ErrorActionPreference = 'Stop'
 
-    `$execArgs = `$Args
+        $path = ($executableDirectory, $Env:PATH) -join [IO.Path]::PathSeparator
 
-    Invoke-WithEnv ``
-        -EnvVars @{
-            PATH = ('$path', `$Env:PATH) -join [IO.Path]::PathSeparator
-        } ``
-        -Script {
-            & '${fullName}' @execArgs
-        }
-}
-"@
+        $ExecutableArgs = $Args
+
+        Invoke-WithEnv -EnvVars @{ PATH = $path } -Script { & $fullName @ExecutableArgs }
+    }
+
+    $name = $Executable.BaseName -replace '\.','_'
+    $functionName = "Invoke-RbEnvShim--${name}"
+
+    New-Item -Path Function: -Name "global:$functionName" -Value $body.GetNewClosure() > $null
 
     $aliasName = (Get-Alias -Name $name -ErrorAction Ignore) ? "rb-${name}" : $name
     New-Alias -Name $aliasName -Value $functionName -Scope Global -Force

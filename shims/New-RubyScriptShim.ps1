@@ -9,15 +9,16 @@ function New-RubyScriptShim {
         [IO.FileInfo] $Executable
     )
 
-    $name = $Executable.BaseName -replace '\.','_'
-    $functionName = "Invoke-RbEnvShim--${name}"
     $fullName = $Executable.FullName
 
-    Invoke-Expression @"
-function global:${functionName} {
-    Invoke-RbEnvShim--ruby -x '$fullName' @Args
-}
-"@
+    $body = {
+        Invoke-RbEnvShim--ruby -x $fullName @Args
+    }
+
+    $name = $Executable.BaseName -replace '\.','_'
+    $functionName = "Invoke-RbEnvShim--${name}"
+
+    New-Item -Path Function: -Name "global:$functionName" -Value $body.GetNewClosure() > $null
 
     $aliasName = (Get-Alias -Name $name -ErrorAction Ignore) ? "rb-${name}" : $name
     New-Alias -Name $aliasName -Value $functionName -Scope Global -Force
