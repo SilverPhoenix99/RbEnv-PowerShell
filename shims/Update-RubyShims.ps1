@@ -1,6 +1,11 @@
 function Update-RubyShims {
 
-    Remove-RubyShims
+    [CmdletBinding(SupportsShouldProcess)]
+    param()
+
+    if ($PSCmdlet.ShouldProcess('Ruby Shims', 'Remove')) {
+        Remove-RubyShims
+    }
 
     $version = Get-RubyVersion
     if (!$version) {
@@ -10,15 +15,18 @@ function Update-RubyShims {
     foreach ($exec in $version.GetExecutables()) {
 
         $type = Get-ExecutableType $exec
+        if (!$type) {
+            continue
+        }
 
-        # Write-Verbose "[Update-RubyShims] File $($exec.Name) is $($type ?? 'not executable')"
-
-        switch -Exact ($type) {
-            'Executable' {
-                New-RubyExecutableShim $exec
-            }
-            'Script' {
-                New-RubyScriptShim $exec
+        if ($PSCmdlet.ShouldProcess($exec.FullName, 'Create Ruby Shim')) {
+            switch -Exact ($type) {
+                'Executable' {
+                    New-RubyExecutableShim $exec
+                }
+                'Script' {
+                    New-RubyScriptShim $exec
+                }
             }
         }
     }

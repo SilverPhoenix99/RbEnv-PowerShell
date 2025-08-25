@@ -1,6 +1,17 @@
 function Initialize-RbEnv {
 
-    Update-RubyShims
+    [CmdletBinding(SupportsShouldProcess)]
+    param()
 
-    [RbEnvLocationChanged]::Register()
+    Update-RubyShims -WhatIf:$WhatIfPreference
+
+    if ($PSCmdlet.ShouldProcess('$ExecutionContext.SessionState.InvokeCommand', 'Registering LocationChangedAction')) {
+
+        $cmd = $global:ExecutionContext.SessionState.InvokeCommand
+
+        $cmd.LocationChangedAction = [Delegate]::Combine(
+            $cmd.LocationChangedAction,
+            [EventHandler[Management.Automation.LocationChangedEventArgs]] ([RbEnvLocationChanged]::OnLocationChanged)
+        )
+    }
 }

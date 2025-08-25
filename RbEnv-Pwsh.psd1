@@ -61,7 +61,15 @@ ScriptsToProcess = @(
 
 # Functions to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no functions to export.
 FunctionsToExport = @(
+    'Get-RbEnvRoot'
+    'Get-RubyShims'
+    'Get-RubyVersion'
+    'Get-RubyVersions'
+    'Initialize-RbEnv'
     'Invoke-RbEnv'
+    'Remove-RubyVersion'
+    'Set-RubyVersion'
+    'Update-RubyShims'
 )
 
 # Cmdlets to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no cmdlets to export.

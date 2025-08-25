@@ -1,6 +1,6 @@
 function Invoke-RbEnv {
 
-    [CmdletBinding(DefaultParameterSetName = 'Command')]
+    [CmdletBinding(DefaultParameterSetName = 'Command', SupportsShouldProcess)]
     param(
 
         [ValidateSet(
@@ -87,10 +87,10 @@ function Invoke-RbEnv {
             Get-GlobalRubyVersion
         }
         'GlobalSet' {
-            Set-GlobalRubyVersion -Version $NewVersion
+            Set-RubyVersion -Version $NewVersion -Global -WhatIf:$WhatIfPreference
         }
         'Init' {
-            Initialize-RbEnv
+            Initialize-RbEnv -WhatIf:$WhatIfPreference
         }
         'Local' {
             Get-LocalRubyVersion
@@ -99,14 +99,13 @@ function Invoke-RbEnv {
             Get-LocalRubyVersion
         }
         'LocalSet' {
-            Set-LocalRubyVersion -Version $NewVersion
+            Set-RubyVersion -Version $NewVersion -Local -WhatIf:$WhatIfPreference
         }
         'LocalUnset' {
-            $versionFile = Join-Path $PWD .ruby-version
-            Remove-Item $versionFile -Force
+            Remove-RubyVersion -Local -WhatIf:$WhatIfPreference
         }
         'Rehash' {
-            Update-RubyShims
+            Update-RubyShims -WhatIf:$WhatIfPreference
         }
         'Root' {
             Get-RbEnvRoot
@@ -118,11 +117,10 @@ function Invoke-RbEnv {
             Get-ShellRubyVersion
         }
         'ShellSet' {
-            Set-ShellRubyVersion -Version $NewVersion
+            Set-RubyVersion -Version $NewVersion -Shell -WhatIf:$WhatIfPreference
         }
         'ShellUnset' {
-            $Env:RBENV_VERSION_OLD = $Env:RBENV_VERSION
-            $Env:RBENV_VERSION = $null
+            Remove-RubyVersion -Shell -WhatIf:$WhatIfPreference
         }
         'Shims' {
             Get-RubyShims
