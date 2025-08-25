@@ -16,7 +16,7 @@ function Get-GlobalRubyVersion {
     }
 
     $rubyPath = if ($version -eq 'system') {
-        try { (Get-SystemRubyVersion).Prefix } catch {}
+        try { (Get-SystemRubyVersion).Prefix } catch { $null }
     }
     else {
         $versionsPath = Get-VersionsPath

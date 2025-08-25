@@ -1,5 +1,9 @@
 function Set-GlobalRubyVersion {
 
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute(
+        'PSUseShouldProcessForStateChangingFunctions', '',
+        Justification = 'Not an exported function'
+    )]
     param(
         [ValidateNotNullOrWhiteSpace()]
         [string] $Version
@@ -8,7 +12,8 @@ function Set-GlobalRubyVersion {
     Test-RubyVersion $Version
 
     $versionFile = Get-GlobalVersionFile
-    $Version > $versionFile.FullName
+
+    Set-Content -LiteralPath $versionFile.FullName -Value $Version
 
     Update-RubyShims
 }

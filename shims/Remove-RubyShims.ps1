@@ -1,5 +1,11 @@
 function Remove-RubyShims {
 
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute(
+        'PSUseShouldProcessForStateChangingFunctions', '',
+        Justification = 'Not an exported function'
+    )]
+    param()
+
     # Remove all existing shims:
     # - aliases
     # - functions

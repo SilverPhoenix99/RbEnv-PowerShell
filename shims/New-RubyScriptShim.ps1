@@ -1,5 +1,9 @@
 function New-RubyScriptShim {
 
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute(
+        'PSUseShouldProcessForStateChangingFunctions', '',
+        Justification = 'Not an exported function'
+    )]
     param(
         [ValidateNotNull()]
         [IO.FileInfo] $Executable

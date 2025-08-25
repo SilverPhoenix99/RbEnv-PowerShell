@@ -8,7 +8,7 @@ function Get-ShellRubyVersion {
     }
 
     $rubyPath = if ($Env:RBENV_VERSION -eq 'system') {
-        try { (Get-SystemRubyVersion).Prefix } catch {}
+        try { (Get-SystemRubyVersion).Prefix } catch { $null }
     }
     else {
         $versionsPath = Get-VersionsPath

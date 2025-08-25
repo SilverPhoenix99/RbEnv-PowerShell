@@ -13,10 +13,10 @@ function Get-RubyVersion {
         [switch] $All
     )
 
-    $shell  = try { Get-ShellRubyVersion } catch {}
-    $local  = try { Get-LocalRubyVersion } catch {}
-    $global = try { Get-GlobalRubyVersion } catch {}
-    $system = try { Get-SystemRubyVersion } catch {}
+    $shell  = try { Get-ShellRubyVersion } catch { $null }
+    $local  = try { Get-LocalRubyVersion } catch { $null }
+    $global = try { Get-GlobalRubyVersion } catch { $null }
+    $system = try { Get-SystemRubyVersion } catch { $null }
 
     $versions = $shell, $local, $global, $system `
         | Where-Object { $_ }

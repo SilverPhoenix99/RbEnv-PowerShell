@@ -1,5 +1,9 @@
 function Set-ShellRubyVersion {
 
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute(
+        'PSUseShouldProcessForStateChangingFunctions', '',
+        Justification = 'Not an exported function'
+    )]
     param(
         [ValidateNotNullOrWhiteSpace()]
         [string] $Version
@@ -14,14 +18,15 @@ function Set-ShellRubyVersion {
         }
 
         $currentVersion = $Env:RBENV_VERSION
-        $Env:RBENV_VERSION = $Env:RBENV_VERSION_OLD
-        $Env:RBENV_VERSION_OLD = $currentVersion
+
+        Set-Item -Path Env:RBENV_VERSION -Value $Env:RBENV_VERSION_OLD
+        Set-Item -Path Env:RBENV_VERSION_OLD -Value $currentVersion
     }
     else {
         Test-RubyVersion $Version
 
-        $Env:RBENV_VERSION_OLD = $Env:RBENV_VERSION
-        $Env:RBENV_VERSION = $Version
+        Set-Item -Path Env:RBENV_VERSION_OLD -Value $Env:RBENV_VERSION
+        Set-Item -Path Env:RBENV_VERSION -Value $Version
     }
 
     Update-RubyShims

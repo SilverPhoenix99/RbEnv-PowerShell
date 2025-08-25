@@ -1,5 +1,9 @@
 function Set-LocalRubyVersion {
 
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute(
+        'PSUseShouldProcessForStateChangingFunctions', '',
+        Justification = 'Not an exported function'
+    )]
     param(
         [ValidateNotNullOrWhiteSpace()]
         [string] $Version
@@ -8,7 +12,8 @@ function Set-LocalRubyVersion {
     Test-RubyVersion $Version
 
     $versionFile = Join-Path $PWD .ruby-version
-    $Version > $versionFile
+
+    Set-Content -LiteralPath $versionFile -Value $Version
 
     Update-RubyShims
 }
