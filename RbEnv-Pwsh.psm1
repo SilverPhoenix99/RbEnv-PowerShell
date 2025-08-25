@@ -3,8 +3,8 @@ $ErrorActionPreference = 'Stop'
 
 $scriptName = (Get-Item $PSCommandPath).BaseName
 
-$psd1 = Get-Content (Join-Path $PSScriptRoot "$scriptName.psd1") -Raw `
-    | Invoke-Expression
+$psd1File = Join-Path $PSScriptRoot "$scriptName.psd1"
+$psd1 = Import-PowerShellDataFile -Path $psd1File
 
 Get-ChildItem $PSScriptRoot -Recurse -Include *.ps1 `
     | ForEach-Object { . $_.FullName }
