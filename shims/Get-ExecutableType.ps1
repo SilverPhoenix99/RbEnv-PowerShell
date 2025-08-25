@@ -9,7 +9,7 @@ function Get-ExecutableType {
         [IO.FileInfo] $Executable
     )
 
-    if ($IsWindows -and $Executable.Extension -eq 'exe') {
+    if ($IsWindows -and $Executable.Extension -eq '.exe') {
         return 'Executable'
     }
 
