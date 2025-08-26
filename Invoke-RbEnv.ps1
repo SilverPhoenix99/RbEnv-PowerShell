@@ -56,6 +56,10 @@ function Invoke-RbEnv {
         [Parameter(ParameterSetName = 'Version')]
         [switch] $All,
 
+        [ArgumentCompleter({
+            param($cmd, $param, $wordToComplete)
+            (Get-RubyVersions).Version.Where({ $_ -like "${wordToComplete}*" })
+        })]
         [ValidateNotNullOrWhiteSpace()]
         [Parameter(ParameterSetName = 'GlobalSet', Mandatory, Position = 1)]
         [Parameter(ParameterSetName = 'LocalSet', Mandatory, Position = 1)]

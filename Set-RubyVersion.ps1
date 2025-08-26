@@ -3,6 +3,10 @@ function Set-RubyVersion {
     [CmdletBinding(DefaultParameterSetName = 'Shell', SupportsShouldProcess)]
     param(
 
+        [ArgumentCompleter({
+            param($cmd, $param, $wordToComplete)
+            (Get-RubyVersions).Version.Where({ $_ -like "${wordToComplete}*" })
+        })]
         [Parameter(Mandatory, Position = 0)]
         [ValidateNotNullOrWhiteSpace()]
         [string] $Version,
