@@ -21,6 +21,8 @@ function Set-ShellRubyVersion {
 
         Set-Item -Path Env:RBENV_VERSION -Value $Env:RBENV_VERSION_OLD
         Set-Item -Path Env:RBENV_VERSION_OLD -Value $currentVersion
+
+        Write-Host "Ruby version is set to ${Env:RBENV_VERSION}"
     }
     else {
         Test-RubyVersion $Version
