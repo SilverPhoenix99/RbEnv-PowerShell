@@ -13,10 +13,12 @@ function Remove-RubyVersion {
         'Shell' {
             Set-Item -Path Env:RBENV_VERSION_OLD -Value $Env:RBENV_VERSION -WhatIf:$WhatIfPreference
             Remove-Item -Path Env:RBENV_VERSION -WhatIf:$WhatIfPreference
+            break
         }
         'Local' {
             $versionFile = Join-Path $PWD .ruby-version
             Remove-Item $versionFile -Force -WhatIf:$WhatIfPreference
+            break
         }
     }
 }

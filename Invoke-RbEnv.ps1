@@ -83,57 +83,75 @@ function Invoke-RbEnv {
     switch -Exact ($cmd) {
         'Help' {
             Get-Help Invoke-RbEnv
+            break
         }
         'Global' {
             Get-GlobalRubyVersion
+            break
         }
         'GlobalGet' {
             Get-GlobalRubyVersion
+            break
         }
         'GlobalSet' {
             Set-RubyVersion -Version $NewVersion -Global -WhatIf:$WhatIfPreference
+            break
         }
         'Init' {
             Initialize-RbEnv -WhatIf:$WhatIfPreference
+            break
         }
         'Local' {
             Get-LocalRubyVersion
+            break
         }
         'LocalGet' {
             Get-LocalRubyVersion
+            break
         }
         'LocalSet' {
             Set-RubyVersion -Version $NewVersion -Local -WhatIf:$WhatIfPreference
+            break
         }
         'LocalUnset' {
             Remove-RubyVersion -Local -WhatIf:$WhatIfPreference
+            break
         }
         'Rehash' {
             Update-RubyShims -WhatIf:$WhatIfPreference
+            break
         }
         'Root' {
             Get-RbEnvRoot
+            break
         }
         'Shell' {
             Get-ShellRubyVersion
+            break
         }
         'ShellGet' {
             Get-ShellRubyVersion
+            break
         }
         'ShellSet' {
             Set-RubyVersion -Version $NewVersion -Shell -WhatIf:$WhatIfPreference
+            break
         }
         'ShellUnset' {
             Remove-RubyVersion -Shell -WhatIf:$WhatIfPreference
+            break
         }
         'Shims' {
             Get-RubyShims
+            break
         }
         'Version' {
             Get-RubyVersion -All:$All
+            break
         }
         'Versions' {
             Get-RubyVersions
+            break
         }
         default {
             throw "Unknown command or not implemented: $($cmd)"

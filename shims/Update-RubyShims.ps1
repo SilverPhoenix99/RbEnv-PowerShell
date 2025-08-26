@@ -23,9 +23,11 @@ function Update-RubyShims {
             switch -Exact ($type) {
                 'Executable' {
                     New-RubyExecutableShim $exec
+                    break
                 }
                 'Script' {
                     New-RubyScriptShim $exec
+                    break
                 }
             }
         }

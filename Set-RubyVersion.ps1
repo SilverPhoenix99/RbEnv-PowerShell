@@ -22,15 +22,18 @@ function Set-RubyVersion {
     )
 
     if ($PSCmdlet.ShouldProcess($PSCmdlet.ParameterSetName, "Set Ruby Version to $Version")) {
-        switch ($PSCmdlet.ParameterSetName) {
+        switch -Exact ($PSCmdlet.ParameterSetName) {
             'Shell' {
                 Set-ShellRubyVersion -Version $Version
+                break
             }
             'Local' {
                 Set-LocalRubyVersion -Version $Version
+                break
             }
             'Global' {
                 Set-GlobalRubyVersion -Version $Version
+                break
             }
         }
     }
