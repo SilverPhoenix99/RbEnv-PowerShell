@@ -14,10 +14,10 @@ function New-RubyExecutableShim {
     $ErrorActionPreference = [Management.Automation.ActionPreference]::Stop
 
     try {
-        $executableDirectory = $Executable.Directory.FullName
-        $fullName = $Executable.FullName
 
         $body = &{
+            $executableDirectory = $Executable.Directory.FullName
+            $fullName = $Executable.FullName
 
             # Shims are NOT advanced functions, so they can't control ErrorAction.
             # This prevents inheriting the caller's ErrorActionPreference here.
