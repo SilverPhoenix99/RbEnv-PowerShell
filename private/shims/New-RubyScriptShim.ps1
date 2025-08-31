@@ -16,14 +16,13 @@ function New-RubyScriptShim {
     try {
         $fullName = $Executable.FullName
 
-        $body = {
+        $body = &{
 
-            [CmdletBinding()]
-            param()
+            # Shims are NOT advanced functions, so they can't control ErrorAction.
+            # This prevents inheriting the caller's ErrorActionPreference here.
+            $ErrorActionPreference = [Management.Automation.ActionPreference]::Continue
 
-            $ErrorActionPreference = $PSBoundParameters['ErrorAction'] ?? [Management.Automation.ActionPreference]::Continue
-
-            Invoke-RbEnvShim--ruby -x $fullName @Args
+            { Invoke-RbEnvShim--ruby -x $fullName @Args }.GetNewClosure()
         }
 
         $name = $Executable.BaseName -replace '\.','_'
