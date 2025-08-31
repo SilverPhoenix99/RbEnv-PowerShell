@@ -17,7 +17,12 @@ function Test-RubyVersion {
 
         $versionsPath = Get-VersionsPath
         $rubyPath = Join-Path $versionsPath $Version
-        return Test-Path $rubyPath -PathType Container
+        if (Test-Path $rubyPath -PathType Container) {
+            return
+        }
+
+        Write-Error "ruby version $Version is not installed" `
+            -RecommendedAction 'Select a valid ruby version from `Get-RubyVersions`'
     }
     catch {
         $global:Error.RemoveAt(0)
