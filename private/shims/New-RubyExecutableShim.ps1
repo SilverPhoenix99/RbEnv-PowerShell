@@ -24,10 +24,8 @@ function New-RubyExecutableShim {
             $ErrorActionPreference = [Management.Automation.ActionPreference]::Continue
 
             {
-                $path = ($executableDirectory, $Env:PATH) -join [IO.Path]::PathSeparator
                 $ExecutableArgs = $Args
-
-                Invoke-WithEnv -EnvVars @{ PATH = $path } -Script { & $fullName @ExecutableArgs }
+                Invoke-WithEnv -Prepend @{ PATH = $executableDirectory } -ScriptBlock { & $fullName @ExecutableArgs }
             }.GetNewClosure()
         }
 
