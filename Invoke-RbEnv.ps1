@@ -86,12 +86,10 @@ function Invoke-RbEnv {
             break
         }
         'Global' {
-            Get-GlobalRubyVersion
-            break
+            return Get-GlobalRubyVersion
         }
         'GlobalGet' {
-            Get-GlobalRubyVersion
-            break
+            return Get-GlobalRubyVersion
         }
         'GlobalSet' {
             Set-RubyVersion -Version $NewVersion -Global -WhatIf:$WhatIfPreference
@@ -102,12 +100,10 @@ function Invoke-RbEnv {
             break
         }
         'Local' {
-            Get-LocalRubyVersion
-            break
+            return Get-LocalRubyVersion
         }
         'LocalGet' {
-            Get-LocalRubyVersion
-            break
+            return Get-LocalRubyVersion
         }
         'LocalSet' {
             Set-RubyVersion -Version $NewVersion -Local -WhatIf:$WhatIfPreference
@@ -122,16 +118,13 @@ function Invoke-RbEnv {
             break
         }
         'Root' {
-            Get-RbEnvRoot
-            break
+            return Get-RbEnvRoot
         }
         'Shell' {
-            Get-ShellRubyVersion
-            break
+            return Get-ShellRubyVersion
         }
         'ShellGet' {
-            Get-ShellRubyVersion
-            break
+            return Get-ShellRubyVersion
         }
         'ShellSet' {
             Set-RubyVersion -Version $NewVersion -Shell -WhatIf:$WhatIfPreference
@@ -142,19 +135,17 @@ function Invoke-RbEnv {
             break
         }
         'Shims' {
-            Get-RubyShims
-            break
+            return Get-RubyShims
         }
         'Version' {
-            Get-RubyVersion -All:$All
-            break
+            return Get-RubyVersion -All:$All
         }
         'Versions' {
-            Get-RubyVersions
-            break
+            return Get-RubyVersions
         }
         default {
-            throw "Unknown command or not implemented: $($cmd)"
+            Write-Error "Unknown command or not implemented: $($cmd)" `
+                -RecommendedAction 'Call `Invoke-RbEnv -Help` for a list of valid commands'
         }
     }
 }

@@ -1,54 +1,103 @@
 
 $script:EXECUTABLE_FLAGS = [IO.UnixFileMode] 'UserExecute,GroupExecute,OtherExecute'
 
-function Get-ExecutableType {
+if ($IsWindows) {
+    function Get-ExecutableType {
 
-    [OutputType([string])] # Nullable
+        [CmdletBinding()]
+        [OutputType([string])] # Nullable
+        param(
+            [ValidateNotNull()]
+            [IO.FileInfo] $Executable
+        )
+
+        $callerErrorActionPreference = $ErrorActionPreference
+        $ErrorActionPreference = [Management.Automation.ActionPreference]::Stop
+        try {
+            if ($Executable.Extension -eq '.exe') {
+                return 'Executable'
+            }
+
+            if ($Executable.Extension) {
+                Write-Debug "[$($MyInvocation.MyCommand)] $($Executable.Name) has unknown extension"
+                return $null
+            }
+
+            # no extension
+
+            # check if it's a binary executable, or a shell script
+
+            # Test for shebang '#!'
+            if (Test-ShellScript $Executable) {
+                return 'Script'
+            }
+
+            Write-Debug "[$($MyInvocation.MyCommand)] $($Executable.Name) is an unknown executable"
+            return $null
+        }
+        catch {
+            $global:Error.RemoveAt(0)
+            Write-Error $_ -ErrorAction $callerErrorActionPreference
+        }
+    }
+}
+elseif ($IsLinux) {
+    function Get-ExecutableType {
+
+        [CmdletBinding()]
+        [OutputType([string])] # Nullable
+        param(
+            [ValidateNotNull()]
+            [IO.FileInfo] $Executable
+        )
+
+        $callerErrorActionPreference = $ErrorActionPreference
+        $ErrorActionPreference = [Management.Automation.ActionPreference]::Stop
+
+        try {
+            if (($Executable.UnixFileMode -band $script:EXECUTABLE_FLAGS) -eq [IO.UnixFileMode]::None) {
+                Write-Debug "[$($MyInvocation.MyCommand)] $($Executable.Name) is not a Linux executable"
+                return $null
+            }
+
+            # check if it's a binary executable, or a shell script
+
+            return (Test-ShellScript $Executable) ? 'Script' : 'Executable'
+        }
+        catch {
+            $global:Error.RemoveAt(0)
+            Write-Error $_ -ErrorAction $callerErrorActionPreference
+        }
+    }
+}
+
+function Test-ShellScript {
+
+    [CmdletBinding()]
+    [OutputType([bool])]
     param(
         [ValidateNotNull()]
         [IO.FileInfo] $Executable
     )
 
-    if ($IsWindows -and $Executable.Extension -eq '.exe') {
-        return 'Executable'
-    }
+    $callerErrorActionPreference = $ErrorActionPreference
+    $ErrorActionPreference = [Management.Automation.ActionPreference]::Stop
 
-    if ($Executable.Extension) {
-        Write-Verbose "[Get-ExecutableType] $($Executable.Name) has unknown extension"
-        return $null
-    }
-
-    # no extension
-
-    if ($IsLinux -and (($Executable.UnixFileMode -band $script:EXECUTABLE_FLAGS) -eq [IO.UnixFileMode]::None)) {
-        # in Linux, it's not a executable
-        Write-Verbose "[Get-ExecutableType] $($Executable.Name) is not a Linux executable"
-        return $null
-    }
-
-    # check if it's a binary executable, or a shell script
-
-    [char[]] $buffer = [char[]]::new(2)
-    $reader = $Executable.OpenText()
     try {
-        $count = $reader.Read($buffer, 0, $buffer.Length)
+        [byte[]] $buffer = [byte[]]::new(2)
+        $reader = $Executable.OpenRead()
+        try {
+            $count = $reader.Read($buffer, 0, $buffer.Length)
+        }
+        finally {
+            $reader.Close()
+        }
+
+        # Test for shebang '#!'
+        return $count -eq 2 -and $buffer[0] -eq 35 -and $buffer[1] -eq 33
     }
-    finally {
-        $reader.Close()
+    catch {
+        $global:Error.RemoveAt(0)
+        Write-Error $_ -ErrorAction $callerErrorActionPreference
     }
-
-    $buffer = $buffer[0..($count-1)]
-    $string = [string]::new($buffer, 0, $buffer.Length)
-
-    if ($string -eq '#!') {
-        return 'Script'
-    }
-
-    if ($IsLinux) {
-        return 'Executable'
-    }
-
-    Write-Verbose "[Get-ExecutableType] $($Executable.Name) is an unknown executable"
-
-    return $null
 }

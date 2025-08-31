@@ -5,22 +5,36 @@ E.g. `~/.rbenv`
 #>
 function Get-RbEnvRoot {
 
-    # Alias: rbenv-root
-
+    [CmdletBinding()]
     [OutputType([IO.DirectoryInfo])]
     param()
 
+    $callerErrorActionPreference = $ErrorActionPreference
+    $ErrorActionPreference = [Management.Automation.ActionPreference]::Stop
+
+    try {
     if ($Env:RBENV_ROOT) {
-        if (Test-Path $Env:RBENV_ROOT -PathType Container) {
-            return Get-Item $Env:RBENV_ROOT -Force
+
+            $root = Get-Item $Env:RBENV_ROOT -Force -ErrorAction Ignore
+            if ($root.PSIsContainer) {
+                return $root
+            }
+
+            Write-Error "not a directory (`$Env:RBENV_ROOT): $Env:RBENV_ROOT" `
+                -RecommendedAction 'Set $Env:RBENV_ROOT to a valid directory.'
+    }
+
+        $rootPath = Join-Path $HOME .rbenv
+        $root = Get-Item $rootPath -Force -ErrorAction Ignore
+        if ($root.PSIsContainer) {
+            return $root
         }
-        throw "`$Env:RBENV_ROOT is not a valid directory: $Env:RBENV_ROOT"
-    }
 
-    $root = Join-Path $Env:HOME .rbenv
-    if (Test-Path $root -PathType Container) {
-        return Get-Item $root -Force
+        Write-Error "not a directory: $rootPath" `
+            -RecommendedAction 'Create the directory `~/.rbenv`, or set $Env:RBENV_ROOT to a valid directory.'
     }
-
-    throw "not a directory: $root"
+    catch {
+        $global:Error.RemoveAt(0)
+        Write-Error $_ -ErrorAction $callerErrorActionPreference
+    }
 }

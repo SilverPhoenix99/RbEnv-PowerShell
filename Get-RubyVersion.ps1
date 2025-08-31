@@ -8,22 +8,33 @@ for shell, local, global, and system, that it can find.
 #>
 function Get-RubyVersion {
 
-    # Never $null
+    [CmdletBinding()]
+    [OutputType([RubyVersionDescriptor[]])]
     param(
         [switch] $All
     )
 
-    $shell  = try { Get-ShellRubyVersion } catch { $null }
-    $local  = try { Get-LocalRubyVersion } catch { $null }
-    $global = try { Get-GlobalRubyVersion } catch { $null }
-    $system = try { Get-SystemRubyVersion } catch { $null }
+    $callerErrorActionPreference = $ErrorActionPreference
+    $ErrorActionPreference = [Management.Automation.ActionPreference]::Stop
 
-    $versions = $shell, $local, $global, $system `
-        | Where-Object { $_ }
+    try {
+        $shell  = Get-ShellRubyVersion  -ErrorAction Ignore
+        $local  = Get-LocalRubyVersion  -ErrorAction Ignore
+        $global = Get-GlobalRubyVersion -ErrorAction Ignore
+        $system = Get-SystemRubyVersion -ErrorAction Ignore
 
-    if (!$versions) {
-        throw 'No ruby installation found'
+        $versions = $shell, $local, $global, $system `
+            | Where-Object { $_ }
+
+        if ($versions) {
+            return $All ? $versions : $versions[0]
+        }
+
+        Write-Error 'No ruby installation found' `
+            -RecommendedAction 'Ensure that Ruby installations are present and that RbEnv is configured to find them.'
     }
-
-    return $All ? $versions : ($versions | Select-Object -First 1)
+    catch {
+        $global:Error.RemoveAt(0)
+        Write-Error $_ -ErrorAction $callerErrorActionPreference
+    }
 }

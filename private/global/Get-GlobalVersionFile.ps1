@@ -3,9 +3,19 @@ Returns the location of the global version file, even if that file does not exis
 #>
 function Get-GlobalVersionFile {
 
-    [OutputType([IO.FileInfo])] # Never $null
+    [CmdletBinding()]
+    [OutputType([IO.FileInfo])]
     param()
 
-    $root = Get-RbEnvRoot
-    [IO.FileInfo] (Join-Path $root version)
+    $callerErrorActionPreference = $ErrorActionPreference
+    $ErrorActionPreference = [Management.Automation.ActionPreference]::Stop
+
+    try {
+        $root = Get-RbEnvRoot
+        return [IO.FileInfo] (Join-Path $root version)
+    }
+    catch {
+        $global:Error.RemoveAt(0)
+        Write-Error $_ -ErrorAction $callerErrorActionPreference
+    }
 }

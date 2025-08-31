@@ -1,6 +1,4 @@
 
-$ErrorActionPreference = 'Stop'
-
 $scriptName = (Get-Item $PSCommandPath).BaseName
 
 $psd1File = Join-Path $PSScriptRoot "$scriptName.psd1"

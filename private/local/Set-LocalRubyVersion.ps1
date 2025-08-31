@@ -1,5 +1,6 @@
 function Set-LocalRubyVersion {
 
+    [CmdletBinding()]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute(
         'PSUseShouldProcessForStateChangingFunctions', '',
         Justification = 'Not an exported function'
@@ -9,11 +10,20 @@ function Set-LocalRubyVersion {
         [string] $Version
     )
 
-    Test-RubyVersion $Version
+    $callerErrorActionPreference = $ErrorActionPreference
+    $ErrorActionPreference = [Management.Automation.ActionPreference]::Stop
 
-    $versionFile = Join-Path $PWD .ruby-version
+    try {
+        Test-RubyVersion $Version
 
-    Set-Content -LiteralPath $versionFile -Value $Version
+        $versionFile = Join-Path $PWD .ruby-version
 
-    Update-RubyShims
+        Set-Content -LiteralPath $versionFile -Value $Version
+
+        Update-RubyShims
+    }
+    catch {
+        $global:Error.RemoveAt(0)
+        Write-Error $_ -ErrorAction $callerErrorActionPreference
+    }
 }

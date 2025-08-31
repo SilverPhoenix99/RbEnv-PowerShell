@@ -1,5 +1,6 @@
 function Set-GlobalRubyVersion {
 
+    [CmdletBinding()]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute(
         'PSUseShouldProcessForStateChangingFunctions', '',
         Justification = 'Not an exported function'
@@ -9,11 +10,20 @@ function Set-GlobalRubyVersion {
         [string] $Version
     )
 
-    Test-RubyVersion $Version
+    $callerErrorActionPreference = $ErrorActionPreference
+    $ErrorActionPreference = [Management.Automation.ActionPreference]::Stop
 
-    $versionFile = Get-GlobalVersionFile
+    try {
+        Test-RubyVersion $Version
 
-    Set-Content -LiteralPath $versionFile.FullName -Value $Version
+        $versionFile = Get-GlobalVersionFile
 
-    Update-RubyShims
+        Set-Content -LiteralPath $versionFile.FullName -Value $Version
+
+        Update-RubyShims
+    }
+    catch {
+        $global:Error.RemoveAt(0)
+        Write-Error $_ -ErrorAction $callerErrorActionPreference
+    }
 }

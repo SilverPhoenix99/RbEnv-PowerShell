@@ -3,33 +3,39 @@ function Update-RubyShims {
     [CmdletBinding(SupportsShouldProcess)]
     param()
 
-    if ($PSCmdlet.ShouldProcess('Ruby Shims', 'Remove')) {
-        Remove-RubyShims
-    }
+    $callerErrorActionPreference = $ErrorActionPreference
+    $ErrorActionPreference = [Management.Automation.ActionPreference]::Stop
 
-    $version = Get-RubyVersion
-    if (!$version) {
-        return
-    }
-
-    foreach ($exec in $version.GetExecutables()) {
-
-        $type = Get-ExecutableType $exec
-        if (!$type) {
-            continue
+    try {
+        if ($PSCmdlet.ShouldProcess('Ruby Shims', 'Remove')) {
+            Remove-RubyShims
         }
 
-        if ($PSCmdlet.ShouldProcess($exec.FullName, 'Create Ruby Shim')) {
-            switch -Exact ($type) {
-                'Executable' {
-                    New-RubyExecutableShim $exec
-                    break
-                }
-                'Script' {
-                    New-RubyScriptShim $exec
-                    break
+        $version = Get-RubyVersion
+
+        foreach ($exec in $version.GetExecutables()) {
+
+            $type = Get-ExecutableType $exec
+            if (!$type) {
+                continue
+            }
+
+            if ($PSCmdlet.ShouldProcess($exec.FullName, 'Create Ruby Shim')) {
+                switch -Exact ($type) {
+                    'Executable' {
+                        New-RubyExecutableShim $exec
+                        break
+                    }
+                    'Script' {
+                        New-RubyScriptShim $exec
+                        break
+                    }
                 }
             }
         }
+    }
+    catch {
+        $global:Error.RemoveAt(0)
+        Write-Error $_ -ErrorAction $callerErrorActionPreference
     }
 }

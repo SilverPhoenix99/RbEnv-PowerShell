@@ -1,5 +1,6 @@
 function Find-LocalVersionFile {
 
+    [CmdletBinding()]
     [OutputType([IO.FileInfo])] # Nullable
     param(
         [ValidateNotNull()]

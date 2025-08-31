@@ -5,28 +5,34 @@ Returns $null if the file wasn't found.
 #>
 function Get-LocalVersionFile {
 
+    [CmdletBinding()]
     [OutputType([IO.FileInfo])] # Nullable
     param()
 
-    $versionPath = Get-VersionPath
-    Write-Debug "[Get-LocalVersionFile] Starting search path: $($versionPath ?? '$null')"
-    $filePath = Find-LocalVersionFile $versionPath
-    Write-Debug "[Get-LocalVersionFile] Found version file = $($filePath ?? '$null')"
-    if ($filePath) {
+    $callerErrorActionPreference = $ErrorActionPreference
+    $ErrorActionPreference = [Management.Automation.ActionPreference]::Stop
+
+    try {
+        $versionPath = Get-VersionPath
+        $filePath = Find-LocalVersionFile $versionPath
+        if ($filePath) {
+            return $filePath
+        }
+
+        if ($versionPath.FullName -eq $PWD.Path) {
+            # If they're the same path, then it was already searched above,
+            # and it wasn't found.
+            return $null
+        }
+
+        $filePath = Find-LocalVersionFile $PWD.Path
+
         return $filePath
     }
-
-    if ($versionPath.FullName -eq $PWD.Path) {
-        # If they're the same path, then it was already searched above,
-        # and it wasn't found.
-        return $null
+    catch {
+        $global:Error.RemoveAt(0)
+        Write-Error $_ -ErrorAction $callerErrorActionPreference
     }
-
-    Write-Debug "[Get-LocalVersionFile] Starting search path in `$PWD = $PWD"
-    $filePath = Find-LocalVersionFile $PWD.Path
-    Write-Debug "[Get-LocalVersionFile] Found version file = $($filePath ?? '$null')"
-
-    return $filePath
 }
 
 <#
@@ -36,18 +42,29 @@ Uses $Env:RBENV_DIR, if set, otherwise defaults to $PWD
 #>
 function Get-VersionPath {
 
+    [CmdletBinding()]
     [OutputType([IO.DirectoryInfo])]
     param()
 
-    if (!$Env:RBENV_DIR) {
-        return Get-Item $PWD -Force
+    $callerErrorActionPreference = $ErrorActionPreference
+    $ErrorActionPreference = [Management.Automation.ActionPreference]::Stop
+
+    try {
+        if (!$Env:RBENV_DIR) {
+            return Get-Item $PWD -Force
+        }
+
+        $dir = Resolve-Path $Env:RBENV_DIR -ErrorAction Ignore
+
+        if (-not $dir -or -not (Test-Path $dir -PathType Container)) {
+            Write-Error "Cannot change working directory to (`$Env:RBENV_DIR) $Env:RBENV_DIR" `
+                -RecommendedAction 'Set $Env:RBENV_DIR to a valid directory containing the Ruby installations.'
+        }
+
+        return Get-Item $dir -Force
     }
-
-    $dir = Resolve-Path $Env:RBENV_DIR -ErrorAction Ignore
-
-    if (-not $dir -or -not (Test-Path $dir -PathType Container)) {
-        throw "cannot change working directory to (Env:RBENV_DIR) $Env:RBENV_DIR"
+    catch {
+        $global:Error.RemoveAt(0)
+        Write-Error $_ -ErrorAction $callerErrorActionPreference
     }
-
-    return Get-Item $dir -Force
 }

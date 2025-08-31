@@ -3,10 +3,20 @@ Directory where ruby versions are installed.
 #>
 function Get-VersionsPath {
 
-    [OutputType([IO.DirectoryInfo])] # Never $null
+    [CmdletBinding()]
+    [OutputType([IO.DirectoryInfo])]
     param()
 
-    $root = Get-RbEnvRoot
-    $dir = Join-Path $root versions
-    return Get-Item $dir -Force
+    $callerErrorActionPreference = $ErrorActionPreference
+    $ErrorActionPreference = [Management.Automation.ActionPreference]::Stop
+
+    try {
+        $root = Get-RbEnvRoot
+        $dir = Join-Path $root versions
+        return Get-Item $dir -Force
+    }
+    catch {
+        $global:Error.RemoveAt(0)
+        Write-Error $_ -ErrorAction $callerErrorActionPreference
+    }
 }
