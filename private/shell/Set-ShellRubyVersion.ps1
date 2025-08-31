@@ -19,24 +19,23 @@ function Set-ShellRubyVersion {
 
             # Swaps between the 2 versions
 
-            if (!$Env:RBENV_VERSION_OLD) {
-                Write-Error '$Env:RBENV_VERSION_OLD is not set' `
+            if (!$Env:RBENV_VERSION -and !$Env:RBENV_VERSION_OLD) {
+                Write-Error 'No Shell version to swap ($Env:RBENV_VERSION or $Env:RBENV_VERSION_OLD).' `
                     -RecommendedAction 'Call `Set-RubyVersion -Shell` with an existing ruby version before using this command with `-` as the version.'
             }
 
-            $currentVersion = $Env:RBENV_VERSION
+            if ($Env:RBENV_VERSION_OLD) {
+                Test-RubyVersion $Env:RBENV_VERSION_OLD
+            }
 
-            Set-Item -Path Env:RBENV_VERSION -Value $Env:RBENV_VERSION_OLD
-            Set-Item -Path Env:RBENV_VERSION_OLD -Value $currentVersion
-
-            Write-Host "Ruby version is set to ${Env:RBENV_VERSION}"
+            $Version = $Env:RBENV_VERSION_OLD
         }
         else {
             Test-RubyVersion $Version
-
-            Set-Item -Path Env:RBENV_VERSION_OLD -Value $Env:RBENV_VERSION
-            Set-Item -Path Env:RBENV_VERSION -Value $Version
         }
+
+        Set-Item -Path Env:RBENV_VERSION_OLD -Value $Env:RBENV_VERSION
+        Set-Item -Path Env:RBENV_VERSION -Value $Version
 
         Update-RubyShims
     }
