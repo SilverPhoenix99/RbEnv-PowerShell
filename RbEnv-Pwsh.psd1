@@ -8,7 +8,7 @@
 
 @{
 
-ModuleVersion = '1.0.3'
+ModuleVersion = '1.1.0'
 GUID = '53d8780e-3b87-4ee0-a3b5-0f11cff1d870'
 Author = 'SilverPhoenix99'
 Copyright = '(c) SilverPhoenix99. All rights reserved.'
@@ -39,7 +39,7 @@ PowerShellVersion = '7.5'
 # Modules that must be imported into the global environment prior to importing this module
 RequiredModules = @(
     @{
-        ModuleName = 'ToolShed'; RequiredVersion = '1.1.3'
+        ModuleName = 'ToolShed'; RequiredVersion = '1.2.0'
     }
 )
 
