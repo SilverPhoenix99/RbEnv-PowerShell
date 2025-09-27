@@ -4,11 +4,16 @@ if (!$IsWindows) {
 
 function Install-Ruby {
 
-    [CmdletBinding()]
+    [CmdletBinding(DefaultParameterSetName = 'Version')]
     param(
-        [string] $Version
+        [ValidateNotNullOrWhiteSpace()]
+        [Parameter(Mandatory, ParameterSetName = 'Version')]
+        [string] $Version,
 
-        # TODO: [switch] $Force
+        [Parameter(Mandatory, ParameterSetName = 'Latest')]
+        [switch] $Latest
+
+        # TODO: [switch] $Force # To reinstall on top of an existing installation. Won't affect gems.
     )
 
     $callerErrorActionPreference = $ErrorActionPreference
@@ -21,7 +26,14 @@ function Install-Ruby {
             return
         }
 
-        $url = "https://api.github.com/repos/oneclick/rubyinstaller2/releases/tags/RubyInstaller-$Version"
+        $url = switch -Exact ($PSCmdlet.ParameterSetName) {
+            'Version' {
+                "https://api.github.com/repos/oneclick/rubyinstaller2/releases/tags/RubyInstaller-$Version"
+            }
+            'Latest' {
+                'https://api.github.com/repos/oneclick/rubyinstaller2/releases/latest'
+            }
+        }
 
         $release = Invoke-RestMethod `
             -Method Get `
@@ -34,6 +46,10 @@ function Install-Ruby {
 
         if ($statusCode -ne 200) {
             Write-Error "Ruby version $Version not found"
+        }
+
+        if ($Latest) {
+            $Version = $release.tag_name -replace '^RubyInstaller-'
         }
 
         $versionsPath = Get-VersionsPath
@@ -56,6 +72,8 @@ function Install-Ruby {
             Move-Item (Join-Path $topLevel *) $installPath
             Remove-Item $topLevel
         }
+
+        Get-RubyVersions | Where-Object Version -eq $Version
     }
     catch {
         $global:Error.RemoveAt(0)
