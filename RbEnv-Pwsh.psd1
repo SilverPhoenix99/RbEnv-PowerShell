@@ -67,6 +67,7 @@ FunctionsToExport = @(
     'Get-RubyVersion'
     'Get-RubyVersions'
     'Initialize-RbEnv'
+    'Install-Ruby'
     'Invoke-RbEnv'
     'Remove-RubyVersion'
     'Search-RubyVersions'
