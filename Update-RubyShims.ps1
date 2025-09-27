@@ -11,7 +11,10 @@ function Update-RubyShims {
             Remove-RubyShims
         }
 
-        $version = Get-RubyVersion
+        $version = Get-RubyVersion -ErrorAction Ignore
+        if (-not $version) {
+            return
+        }
 
         foreach ($exec in $version.GetExecutables()) {
 

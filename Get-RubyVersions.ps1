@@ -8,7 +8,7 @@ function Get-RubyVersions {
     $ErrorActionPreference = [Management.Automation.ActionPreference]::Stop
 
     try {
-        $selectedVersions = Get-RubyVersion -All
+        $selectedVersions = (Get-RubyVersion -All -ErrorAction Ignore) ?? @()
         $currentVersion = $selectedVersions[0]
 
         if ($selectedVersions.Where({ $_.Kind -eq 'System' }, 'First')) {
