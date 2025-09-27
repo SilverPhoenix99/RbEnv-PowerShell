@@ -53,7 +53,9 @@ ScriptsToProcess = @()
 # TypesToProcess = @()
 
 # Format files (.ps1xml) to be loaded when importing this module
-# FormatsToProcess = @()
+FormatsToProcess = @(
+    'formats/RubyVersion.ps1xml'
+)
 
 # Modules to import as nested modules of the module specified in RootModule/ModuleToProcess
 # NestedModules = @()
@@ -67,6 +69,7 @@ FunctionsToExport = @(
     'Initialize-RbEnv'
     'Invoke-RbEnv'
     'Remove-RubyVersion'
+    'Search-RubyVersions'
     'Set-RubyVersion'
     'Update-RubyShims'
 )
