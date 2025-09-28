@@ -1,7 +1,3 @@
-if (!$IsWindows) {
-    return
-}
-
 class RubyVersion : IComparable, IEquatable[object] {
 
     [uint] $Major
@@ -59,6 +55,23 @@ class RubyVersion : IComparable, IEquatable[object] {
             '.'
             $this.Patch
             $this.Revision -eq 0 ? '' : "-$($this.Revision)"
+        )
+    }
+
+    static [RubyVersion] Parse([string] $versionString) {
+
+        $versionString = ${versionString}?.Trim()
+        if ([string]::IsNullOrEmpty($versionString)) {
+            throw [FormatException] 'Version string is null or empty.'
+        }
+
+        $version = $versionString -split '[.-]' | ForEach-Object { [uint] $_ }
+
+        return [RubyVersion]::new(
+            $version[0],
+            $version[1],
+            $version[2],
+            $version[3] ?? 0
         )
     }
 }

@@ -1,37 +1,37 @@
 class RubyVersionDescriptor {
 
     [ValidateNotNull()]
-    [ValidateSet('System', 'Global', 'Local', 'Shell')]
-    [string] $Kind
+    [RubyVersion] $Version
 
-    [ValidateNotNullOrWhiteSpace()]
-    [string] $Version
+    [Nullable[RubyConfiguration]] $Configuration
 
-    [ValidateNotNullOrWhiteSpace()]
-    [string] $Origin
+    [IO.DirectoryInfo] $Path
 
-    [ValidateNotNull()]
-    [IO.DirectoryInfo] $Prefix
+    [string[]] $Source
 
     RubyVersionDescriptor(
-        [string] $Kind,
-        [string] $Version,
-        [string] $Origin,
-        [IO.DirectoryInfo] $Prefix
+        [RubyVersion] $Version,
+        [Nullable[RubyConfiguration]] $Configuration,
+        [IO.DirectoryInfo] $Path,
+        [string[]] $Source
     ) {
-        $this.Kind = $Kind
         $this.Version = $Version
-        $this.Origin = $Origin
-        $this.Prefix = $Prefix
+        $this.Configuration = $Configuration
+        $this.Path = $Path
+        $this.Source = $Source
     }
 
     [IO.DirectoryInfo] ResolvePath() {
-        return $this.Prefix.ResolveLinkTarget($true) ?? $this.Prefix
+        return $this.Path?.ResolveLinkTarget($true) ?? $this.Path
     }
 
     [IO.FileInfo[]] GetExecutables() {
 
-        $binDir = $this.Prefix.GetDirectories('bin')[0]
+        if (!$this.Path) {
+            return @()
+        }
+
+        $binDir = $this.Path.GetDirectories('bin')[0]
         if ($binDir) {
             return $binDir.GetFiles()
         }

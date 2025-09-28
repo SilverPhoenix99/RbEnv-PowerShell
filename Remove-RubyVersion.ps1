@@ -13,6 +13,8 @@ function Remove-RubyVersion {
     $ErrorActionPreference = [Management.Automation.ActionPreference]::Stop
 
     try {
+        $previousVersion = Get-RubyVersion
+
         switch -Exact ($PSCmdlet.ParameterSetName) {
             'Shell' {
                 Set-Item -Path Env:RBENV_VERSION_OLD -Value $Env:RBENV_VERSION -WhatIf:$WhatIfPreference
@@ -24,6 +26,12 @@ function Remove-RubyVersion {
                 Remove-Item $versionFile -Force -WhatIf:$WhatIfPreference
                 break
             }
+        }
+
+        $currentVersion = Get-RubyVersion
+
+        if ($previousVersion.Path.FullName -ne $currentVersion.Path.FullName) {
+            Update-RubyShims
         }
     }
     catch {

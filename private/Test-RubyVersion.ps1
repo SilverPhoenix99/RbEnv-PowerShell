@@ -22,7 +22,7 @@ function Test-RubyVersion {
         }
 
         Write-Error "ruby version $Version is not installed" `
-            -RecommendedAction 'Select a valid ruby version from `Get-RubyVersions`'
+            -RecommendedAction 'Select a valid ruby version from `Get-RubyVersion -Installed`'
     }
     catch {
         $global:Error.RemoveAt(0)

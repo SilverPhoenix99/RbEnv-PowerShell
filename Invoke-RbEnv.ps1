@@ -13,7 +13,9 @@ function Invoke-RbEnv {
             'Shell',
             'Shims',
             'Version',
-            'Versions'
+            'Versions',
+            'Remote',
+            'Install'
         )]
         [Parameter(ParameterSetName = 'Command', Position = 0)]
         [string] $Command,
@@ -54,99 +56,134 @@ function Invoke-RbEnv {
         [switch] $Versions,
 
         [Parameter(ParameterSetName = 'Version')]
+        [Parameter(ParameterSetName = 'Remote')]
         [switch] $All,
 
         [ArgumentCompleter({
             param($cmd, $param, $wordToComplete)
-            (Get-RubyVersions).Version.Where({ $_ -like "${wordToComplete}*" })
+            (Get-RubyVersion -Installed).
+                ForEach({ $_.Version.ToString() }).
+                Where({ $_ -like "${wordToComplete}*" })
         })]
         [ValidateNotNullOrWhiteSpace()]
         [Parameter(ParameterSetName = 'GlobalSet', Mandatory, Position = 1)]
         [Parameter(ParameterSetName = 'LocalSet', Mandatory, Position = 1)]
         [Parameter(ParameterSetName = 'ShellSet', Mandatory, Position = 1)]
+        [Parameter(ParameterSetName = 'Install', Mandatory, Position = 1)]
         [string] $NewVersion,
 
         [Parameter(ParameterSetName = 'LocalUnset', Mandatory)]
         [Parameter(ParameterSetName = 'ShellUnset', Mandatory)]
-        [switch] $Unset
+        [switch] $Unset,
+
+        [Parameter(ParameterSetName = 'Remote', Mandatory)]
+        [switch] $Remote,
+
+        [Parameter(ParameterSetName = 'Install', Mandatory)]
+        [switch] $Instal
     )
 
-    $cmd = $PSCmdlet.ParameterSetName
-    if ($cmd -eq 'Command') {
-        $cmd = $Command
-    }
+    $callerErrorActionPreference = $ErrorActionPreference
+    $ErrorActionPreference = [Management.Automation.ActionPreference]::Stop
 
-    if (!$cmd) {
-        $cmd = 'Help'
-    }
+    try {
 
-    switch -Exact ($cmd) {
-        'Help' {
-            Get-Help Invoke-RbEnv
-            break
+        $cmd = $PSCmdlet.ParameterSetName
+        if ($cmd -eq 'Command') {
+            $cmd = $Command
         }
-        'Global' {
-            return Get-GlobalRubyVersion
+
+        if (!$cmd) {
+            $cmd = 'Help'
         }
-        'GlobalGet' {
-            return Get-GlobalRubyVersion
+
+        switch -Exact ($cmd) {
+            'Help' {
+                Get-Help Invoke-RbEnv
+                break
+            }
+            'Global' {
+                return Get-GlobalRubyVersion
+            }
+            'GlobalGet' {
+                return Get-GlobalRubyVersion
+            }
+            'GlobalSet' {
+                Set-RubyVersion -Version $NewVersion -Global -WhatIf:$WhatIfPreference
+                break
+            }
+            'Init' {
+                Initialize-RbEnv -WhatIf:$WhatIfPreference
+                break
+            }
+            'Local' {
+                return Get-LocalRubyVersion
+            }
+            'LocalGet' {
+                return Get-LocalRubyVersion
+            }
+            'LocalSet' {
+                Set-RubyVersion -Version $NewVersion -Local -WhatIf:$WhatIfPreference
+                break
+            }
+            'LocalUnset' {
+                Remove-RubyVersion -Local -WhatIf:$WhatIfPreference
+                break
+            }
+            'Rehash' {
+                Update-RubyShims -WhatIf:$WhatIfPreference
+                break
+            }
+            'Root' {
+                return Get-RbEnvRoot
+            }
+            'Shell' {
+                return Get-ShellRubyVersion
+            }
+            'ShellGet' {
+                return Get-ShellRubyVersion
+            }
+            'ShellSet' {
+                Set-RubyVersion -Version $NewVersion -Shell -WhatIf:$WhatIfPreference
+                break
+            }
+            'ShellUnset' {
+                Remove-RubyVersion -Shell -WhatIf:$WhatIfPreference
+                break
+            }
+            'Shims' {
+                return Get-RubyShims
+            }
+            'Version' {
+                if ($All) {
+                    return Get-RubyVersion -Installed
+                }
+                return Get-RubyVersion -Current
+            }
+            'Versions' {
+                return Get-RubyVersion -Installed
+            }
+            'Remote' {
+                return Get-RubyVersion -Remote -All:$All
+            }
+            'Install' {
+                if ($NewVersion) {
+                    Install-Ruby -Version $NewVersion
+                }
+                else {
+                    Install-Ruby -Latest
+                }
+                break
+            }
+            default {
+                Write-Error "Unknown command or not implemented: $($cmd)" `
+                    -RecommendedAction 'Call `Invoke-RbEnv -Help` for a list of valid commands'
+            }
         }
-        'GlobalSet' {
-            Set-RubyVersion -Version $NewVersion -Global -WhatIf:$WhatIfPreference
-            break
-        }
-        'Init' {
-            Initialize-RbEnv -WhatIf:$WhatIfPreference
-            break
-        }
-        'Local' {
-            return Get-LocalRubyVersion
-        }
-        'LocalGet' {
-            return Get-LocalRubyVersion
-        }
-        'LocalSet' {
-            Set-RubyVersion -Version $NewVersion -Local -WhatIf:$WhatIfPreference
-            break
-        }
-        'LocalUnset' {
-            Remove-RubyVersion -Local -WhatIf:$WhatIfPreference
-            break
-        }
-        'Rehash' {
-            Update-RubyShims -WhatIf:$WhatIfPreference
-            break
-        }
-        'Root' {
-            return Get-RbEnvRoot
-        }
-        'Shell' {
-            return Get-ShellRubyVersion
-        }
-        'ShellGet' {
-            return Get-ShellRubyVersion
-        }
-        'ShellSet' {
-            Set-RubyVersion -Version $NewVersion -Shell -WhatIf:$WhatIfPreference
-            break
-        }
-        'ShellUnset' {
-            Remove-RubyVersion -Shell -WhatIf:$WhatIfPreference
-            break
-        }
-        'Shims' {
-            return Get-RubyShims
-        }
-        'Version' {
-            return Get-RubyVersion -All:$All
-        }
-        'Versions' {
-            return Get-RubyVersions
-        }
-        default {
-            Write-Error "Unknown command or not implemented: $($cmd)" `
-                -RecommendedAction 'Call `Invoke-RbEnv -Help` for a list of valid commands'
-        }
+    }
+    catch {
+        $global:Error.RemoveAt(0)
+        Write-Error $_ -ErrorAction $callerErrorActionPreference
     }
 }
 

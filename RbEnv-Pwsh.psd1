@@ -8,7 +8,7 @@
 
 @{
 
-ModuleVersion = '1.2.0'
+ModuleVersion = '2.0.0'
 GUID = '53d8780e-3b87-4ee0-a3b5-0f11cff1d870'
 Author = 'SilverPhoenix99'
 Copyright = '(c) SilverPhoenix99. All rights reserved.'
@@ -65,12 +65,10 @@ FunctionsToExport = @(
     'Get-RbEnvRoot'
     'Get-RubyShims'
     'Get-RubyVersion'
-    'Get-RubyVersions'
     'Initialize-RbEnv'
     'Install-Ruby'
     'Invoke-RbEnv'
     'Remove-RubyVersion'
-    'Search-RubyVersions'
     'Set-RubyVersion'
     'Update-RubyShims'
 )

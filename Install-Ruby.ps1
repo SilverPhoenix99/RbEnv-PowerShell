@@ -21,7 +21,8 @@ function Install-Ruby {
 
     try {
         # If already installed, quit
-        if ((Get-RubyVersions).Version -contains $Version) {
+        $installedVersion = Get-RubyVersion -Installed | Where-Object { $_.Version.ToString() -eq $Version }
+        if ($installedVersion) {
             Write-Warning "Ruby version $Version is already installed."
             return
         }
@@ -73,7 +74,7 @@ function Install-Ruby {
             Remove-Item $topLevel
         }
 
-        Get-RubyVersions | Where-Object Version -eq $Version
+        Get-RubyVersion -Installed | Where-Object { $_.Version.ToString() -eq $Version }
     }
     catch {
         $global:Error.RemoveAt(0)

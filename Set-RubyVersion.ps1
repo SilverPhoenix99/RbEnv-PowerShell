@@ -5,7 +5,9 @@ function Set-RubyVersion {
 
         [ArgumentCompleter({
             param($cmd, $param, $wordToComplete)
-            (Get-RubyVersions).Version.Where({ $_ -like "${wordToComplete}*" })
+            (Get-RubyVersion -Installed).
+                ForEach({ $_.Version.ToString() }).
+                Where({ $_ -like "${wordToComplete}*" })
         })]
         [Parameter(Mandatory, Position = 0)]
         [ValidateNotNullOrWhiteSpace()]
