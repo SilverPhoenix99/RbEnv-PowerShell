@@ -80,7 +80,7 @@ function Invoke-RbEnv {
         [switch] $Remote,
 
         [Parameter(ParameterSetName = 'Install', Mandatory)]
-        [switch] $Instal
+        [switch] $Install
     )
 
     $callerErrorActionPreference = $ErrorActionPreference
