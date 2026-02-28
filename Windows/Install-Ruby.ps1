@@ -1,7 +1,3 @@
-if (!$IsWindows) {
-    return
-}
-
 function Install-Ruby {
 
     [CmdletBinding(DefaultParameterSetName = 'Version')]

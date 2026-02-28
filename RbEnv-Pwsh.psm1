@@ -8,6 +8,14 @@ $ErrorActionPreference = [Management.Automation.ActionPreference]::Stop
     Join-Path $PSScriptRoot 'model' 'RubyVersion.ps1'
     Join-Path $PSScriptRoot 'model' 'RubyVersionDescriptor.ps1'
 
+    $osDir = $IsLinux ? 'Linux' `
+        : $IsWindows ? 'Windows' `
+        : $null
+
+    if ($osDir) {
+        Get-ChildItem (Join-Path $PSScriptRoot $osDir) -File -Recurse -Include *.ps1 | ForEach-Object FullName
+    }
+
     Get-ChildItem (Join-Path $PSScriptRoot 'private') -File -Recurse -Include *.ps1 | ForEach-Object FullName
     Get-ChildItem (Join-Path $PSScriptRoot '*.ps1') -File | ForEach-Object FullName
 

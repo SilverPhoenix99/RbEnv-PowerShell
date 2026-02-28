@@ -1,7 +1,3 @@
-if (!$IsWindows) {
-    return
-}
-
 function Get-RemoteRubyVersion {
 
     [CmdletBinding()]
