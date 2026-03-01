@@ -2,14 +2,6 @@ function Get-GithubRelease {
 
     [CmdletBinding()]
     param(
-        [ValidateNotNullOrWhiteSpace()]
-        [Parameter(Mandatory)]
-        [string] $Owner,
-
-        [ValidateNotNullOrWhiteSpace()]
-        [Parameter(Mandatory)]
-        [string] $Repository,
-
         [uint] $Page = 1
     )
 
@@ -20,7 +12,7 @@ function Get-GithubRelease {
 
         $response = Invoke-WebRequest `
             -Method Get `
-            -Uri "https://api.github.com/repos/${Owner}/${Repository}/releases" `
+            -Uri 'https://api.github.com/repos/oneclick/rubyinstaller2/releases' `
             -Headers @{ Accept = 'application/vnd.github+json' } `
             -Body @{
                 per_page = 100

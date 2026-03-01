@@ -53,7 +53,7 @@ function Get-RemoteRubyVersion {
             [uint] $Page
         )
 
-        $response = Get-GithubRelease -Owner 'oneclick' -Repository 'rubyinstaller2' -Page $Page
+        $response = Get-GithubRelease -Page $Page
 
         [PSCustomObject] @{
             NextPage = $response.NextPage
