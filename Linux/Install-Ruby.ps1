@@ -56,6 +56,8 @@ function Install-Ruby {
 
         tar -xzf $installPackage --strip-components=2 -C $versionPath
 
+        chmod u+w $versionPath --recursive
+
         Remove-Item $installPackage
 
         Get-RubyVersion -Installed | Where-Object { $_.Version.ToString() -eq $Version }
