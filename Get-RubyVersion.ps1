@@ -126,16 +126,23 @@ function Get-RubyVersion {
 
         $versions = [Collections.Generic.List[RubyVersionDescriptor]]::new()
 
-        foreach ($remoteVersion in $remoteVersions) {
+        foreach ($remoteVersion in $remoteVersions.Version) {
 
-            $descriptor = $installedVersions[$remoteVersion.Version]
+            $descriptor = $installedVersions[$remoteVersion]
+
             if ($descriptor) {
                 $descriptor.Configuration = $descriptor.Configuration -bor [RubyConfiguration]::Remote
-                $versions.Add($descriptor)
             }
             else {
-                $versions.Add($remoteVersion)
+                $descriptor = [RubyVersionDescriptor]::new(
+                    $remoteVersion,
+                    [RubyConfiguration]::Remote,
+                    $null,
+                    $null
+                )
             }
+
+            $versions.Add($descriptor)
         }
 
         return $versions | Sort-Object Version -Descending

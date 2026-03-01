@@ -1,7 +1,14 @@
+$script:CPU_ARCH = switch -Exact ($Env:PROCESSOR_ARCHITECTURE) {
+    'x86'   { 'x86' }
+    'ARM64' { 'arm' }
+    default { 'x64' }
+}
+
+$script:ASSET_SUFFIX = "-${script:CPU_ARCH}.7z"
+
 function Get-RemoteRubyVersion {
 
-    [CmdletBinding()]
-    [OutputType([RubyVersionDescriptor[]])]
+    [CmdletBinding()] # Never empty
     param(
         [switch] $All
     )
@@ -9,70 +16,69 @@ function Get-RemoteRubyVersion {
     $callerErrorActionPreference = $ErrorActionPreference
     $ErrorActionPreference = [Management.Automation.ActionPreference]::Stop
 
-    try {
+    function ConvertTo-RubyVersion {
 
-        $url = 'https://api.github.com/repos/oneclick/rubyinstaller2/releases'
+        param(
+            [ValidateNotNull()]
+            [Parameter(Mandatory, Position = 0, ValueFromPipeline)]
+            [object] $Release
+        )
 
-        if (!$All) {
+        process {
 
-            $url += '/latest'
+            if ($Release.prerelease -or $Release.draft) {
+                return
+            }
 
-            $releases = Invoke-RestMethod `
-                -Method Get `
-                -Uri $url `
-                -Headers @{ Accept = 'application/vnd.github+json' } `
-                -ConnectionTimeoutSeconds 2 `
-                -OperationTimeoutSeconds 5 `
-                -ResponseHeadersVariable headers
-        }
-        else {
+            $tag = $Release.tag_name -replace '^RubyInstaller-'
+            $name = "rubyinstaller-${tag}${script:ASSET_SUFFIX}"
 
-            $response = Invoke-WebRequest `
-                -Method Get `
-                -Uri $url `
-                -Headers @{ Accept = 'application/vnd.github+json' } `
-                -Body @{ per_page = 100 } `
-                -ConnectionTimeoutSeconds 2 `
-                -OperationTimeoutSeconds 5
+            $asset = $Release.assets.Where({ $_.name -eq $name }, 'First')
+            if (!$asset) {
+                return
+            }
 
-            $releases = $response.Content | ConvertFrom-Json
-
-            if ($response.RelationLink.last) {
-
-                $linkUrl = [uri] $response.RelationLink.last
-                $query = [Web.HttpUtility]::ParseQueryString($linkUrl.Query)
-                $lastPage = [uint] $query['page']
-
-                for ($page = 2; $page -le $lastPage; $page++) {
-
-                    $response = Invoke-WebRequest `
-                        -Method Get `
-                        -Uri $url `
-                        -Headers @{ Accept = 'application/vnd.github+json' } `
-                        -Body @{ per_page = 100 ; page = $page } `
-                        -ConnectionTimeoutSeconds 2 `
-                        -OperationTimeoutSeconds 5
-
-                    $releases += $response.Content | ConvertFrom-Json
-                }
+            [PSCustomObject] @{
+                Version = [RubyVersion]::Parse($tag)
+                AssetName = $asset.name
+                AssetUrl = [uri] $asset.url
             }
         }
+    }
 
-        return $releases `
-            | Where-Object { !$_.prerelease -and !$_.draft } `
-            | ForEach-Object {
+    function Get-GithubVersions {
 
-                $tag = $_.tag_name -replace '^RubyInstaller-'
-                $version = [RubyVersion]::Parse($tag)
+        param(
+            [Parameter(Mandatory, Position = 0)]
+            [uint] $Page
+        )
 
-                [RubyVersionDescriptor]::new(
-                    $version,
-                    [RubyConfiguration]::Remote,
-                    $null,
-                    $null
-                )
-            } `
-            | Sort-Object Version -Descending
+        $response = Get-GithubRelease -Owner 'oneclick' -Repository 'rubyinstaller2' -Page $Page
+
+        [PSCustomObject] @{
+            NextPage = $response.NextPage
+            Versions = $response.Releases | ConvertTo-RubyVersion
+        }
+    }
+
+    try {
+
+        $response = Get-GithubVersions -Page 1
+        $versions = @($response.Versions)
+
+        while ($response.NextPage) {
+            $response = Get-GithubVersions -Page $response.NextPage
+            $versions += @($response.Versions)
+        }
+
+        $versions = $versions | Sort-Object Version -Descending
+
+        if (!$versions) {
+            $txt = $All ? 'versions' : 'version'
+            Write-Error "No $txt found for CPU Architecture '${script:CPU_ARCH}'"
+        }
+
+        return $All ? $versions : $versions[0]
     }
     catch {
         $global:Error.RemoveAt(0)
