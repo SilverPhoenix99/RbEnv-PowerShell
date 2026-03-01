@@ -48,6 +48,10 @@ function Get-RubyVersion {
             $Current = $true
         }
 
+        if ($Remote -and !$IsWindows) {
+            Write-Error 'Remote version lookup is only supported on Windows.'
+        }
+
         $shell = Get-ShellRubyVersion  -ErrorAction Ignore
         if ($shell -and $Current) {
             return $shell

@@ -12,5 +12,5 @@ function Install-Ruby {
         # TODO: [switch] $Force # To reinstall on top of an existing installation. Won't affect gems.
     )
 
-    throw 'Not Implemented yet'
+    Write-Error 'Ruby installation is only supported on Windows.'
 }
