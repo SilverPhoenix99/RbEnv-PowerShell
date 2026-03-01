@@ -53,6 +53,7 @@ function Install-Ruby {
 
         $baseName = Split-Path $asset.AssetName -LeafBase
         $installPath = Join-Path $versionsPath $baseName
+
         7z x -y -bso0 -spe "-o$installPath" $installPackage
 
         $versionPath = Join-Path $versionsPath $Version
