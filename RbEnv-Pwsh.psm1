@@ -1,25 +1,43 @@
 
 $ErrorActionPreference = [Management.Automation.ActionPreference]::Stop
 
-(& {
+$sources = (& {
     # Sorted by dependencies:
-    Join-Path $PSScriptRoot 'model' 'RbEnvLocationChanged.ps1'
-    Join-Path $PSScriptRoot 'model' 'RubyConfiguration.ps1'
-    Join-Path $PSScriptRoot 'model' 'RubyVersion.ps1'
-    Join-Path $PSScriptRoot 'model' 'RubyVersionDescriptor.ps1'
+    Join-Path $PSScriptRoot 'model' 'RbEnvLocationChanged.ps1' | Get-Item
+    Join-Path $PSScriptRoot 'model' 'RubyConfiguration.ps1' | Get-Item
+    Join-Path $PSScriptRoot 'model' 'RubyVersion.ps1' | Get-Item
+    Join-Path $PSScriptRoot 'model' 'RubyVersionDescriptor.ps1' | Get-Item
 
     $osDir = $IsLinux ? 'Linux' `
         : $IsWindows ? 'Windows' `
         : $null
 
     if ($osDir) {
-        Get-ChildItem (Join-Path $PSScriptRoot $osDir) -File -Recurse -Include *.ps1 | ForEach-Object FullName
+        Join-Path $PSScriptRoot $osDir | Get-ChildItem -File -Recurse -Include *.ps1
     }
 
-    Get-ChildItem (Join-Path $PSScriptRoot 'private') -File -Recurse -Include *.ps1 | ForEach-Object FullName
-    Get-ChildItem (Join-Path $PSScriptRoot '*.ps1') -File | ForEach-Object FullName
+    Join-Path $PSScriptRoot 'private' | Get-ChildItem -File -Recurse -Include *.ps1
+    Join-Path $PSScriptRoot '*.ps1' | Get-ChildItem -File -Exclude *.Cache.ps1
+})
 
-}).ForEach{ . $_ }
+$cacheFile = Join-Path $PSScriptRoot "$(Split-Path $PSCommandPath -LeafBase).Cache.ps1"
+
+if (Test-Path $cacheFile) {
+
+    $cacheTime = (Get-Item $cacheFile).LastWriteTimeUtc
+
+    $requiresBuild = $null -ne $sources.Where({ $_.LastWriteTimeUtc -gt $cacheTime }, 'First')
+
+    if (-not $requiresBuild) {
+        $sources = $null
+    }
+}
+
+if ($sources) {
+    $sources | Get-Content -Raw | Set-Content -Path $cacheFile -Encoding utf8
+}
+
+. $cacheFile
 
 & {
     $scriptName = Split-Path $PSCommandPath -LeafBase
