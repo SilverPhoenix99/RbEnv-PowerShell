@@ -26,7 +26,7 @@ if (Test-Path $cacheFile) {
 
     $cacheTime = (Get-Item $cacheFile).LastWriteTimeUtc
 
-    $skipBuild = $sources.Where({ $_.LastWriteTimeUtc -gt $cacheTime }, 'First').Count -ne 0
+    $skipBuild = $sources.Where({ $_.LastWriteTimeUtc -gt $cacheTime }, 'First').Count -eq 0
 
     if ($skipBuild) {
         $sources = $null
